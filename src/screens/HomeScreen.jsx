@@ -1,13 +1,16 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 import CustomButton from '../components/CustomButton';
 import AddDeedScreen from './AddDeedScreen';
+import {DeedContext} from '../context/DeedContext';
 
 
 function HomeScreen() {
 
   const [showAddDeed, setShowAddDeed] = useState(false);
+
+  const {deeds} = useContext(DeedContext);
 
 
   if (showAddDeed) {
@@ -46,15 +49,24 @@ function HomeScreen() {
         </Text>
 
 
-        <Text style={styles.deed}>
-          ✓ Helped my friend today
-        </Text>
+        {deeds.length === 0 ? (
 
+          <Text style={styles.deed}>
+            No deeds yet. Add your first good deed!
+          </Text>
 
-        <Text style={styles.deed}>
-          ✓ Planted a tree
-        </Text>
+        ) : (
 
+          deeds.map((item) => (
+            <Text
+              key={item.id}
+              style={styles.deed}
+            >
+              ✓ {item.text}
+            </Text>
+          ))
+
+        )}
 
       </View>
 

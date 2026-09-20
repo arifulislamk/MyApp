@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -7,16 +7,24 @@ import {
 } from 'react-native';
 
 import CustomButton from '../components/CustomButton';
+import {DeedContext} from '../context/DeedContext';
 
 
 function AddDeedScreen() {
 
   const [deed, setDeed] = useState('');
-  const [savedDeed, setSavedDeed] = useState('');
+
+  const {addDeed} = useContext(DeedContext);
 
 
   const saveDeed = () => {
-    setSavedDeed(deed);
+
+    if (deed.trim() === '') {
+      return;
+    }
+
+    addDeed(deed);
+
     setDeed('');
   };
 
@@ -27,6 +35,7 @@ function AddDeedScreen() {
       <Text style={styles.title}>
         Add New Deed ✨
       </Text>
+
 
       <Text style={styles.subtitle}>
         What good thing did you do today?
@@ -47,26 +56,9 @@ function AddDeedScreen() {
         onPress={saveDeed}
       />
 
-
-      {savedDeed !== '' && (
-        <View style={styles.card}>
-
-          <Text style={styles.cardTitle}>
-            Your Recent Deed ✅
-          </Text>
-
-          <Text style={styles.cardText}>
-            {savedDeed}
-          </Text>
-
-        </View>
-      )}
-
-
     </View>
   );
 }
-
 
 
 const styles = StyleSheet.create({
@@ -103,29 +95,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     textAlignVertical: 'top',
     fontSize: 16,
-  },
-
-
-  card: {
-    width: '90%',
-    marginTop: 25,
-    padding: 15,
-    borderRadius: 15,
-    backgroundColor: '#FFFFFF',
-  },
-
-
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#F59E0B',
-  },
-
-
-  cardText: {
-    marginTop: 8,
-    fontSize: 16,
-    color: '#555',
   },
 
 });
