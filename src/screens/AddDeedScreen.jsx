@@ -4,100 +4,119 @@ import {
   Text,
   TextInput,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
 
-import CustomButton from '../components/CustomButton';
 import {DeedContext} from '../context/DeedContext';
 
-
-function AddDeedScreen() {
-
+function AddDeedScreen({onChangeScreen}) {
   const [deed, setDeed] = useState('');
 
   const {addDeed} = useContext(DeedContext);
 
-
   const saveDeed = () => {
-
     if (deed.trim() === '') {
       return;
     }
 
-    addDeed(deed);
-
+    addDeed(deed.trim());
     setDeed('');
-  };
 
+    onChangeScreen('Home');
+  };
 
   return (
     <View style={styles.container}>
 
-      <Text style={styles.title}>
-        Add New Deed ✨
-      </Text>
+      <Text style={styles.emoji}>✨</Text>
 
+      <Text style={styles.title}>
+        Add a Good Deed
+      </Text>
 
       <Text style={styles.subtitle}>
         What good thing did you do today?
       </Text>
 
-
       <TextInput
         style={styles.input}
-        placeholder="Write your deed here..."
+        placeholder="Write your good deed..."
+        placeholderTextColor="#AAAAAA"
         value={deed}
         onChangeText={setDeed}
         multiline
+        textAlignVertical="top"
       />
 
+      <TouchableOpacity
+        style={styles.saveButton}
+        activeOpacity={0.8}
+        onPress={saveDeed}>
 
-      <CustomButton
-        title="Save Deed"
-        onPress={saveDeed}
-      />
+        <Text style={styles.saveButtonText}>
+          Save Deed ✓
+        </Text>
+
+      </TouchableOpacity>
 
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#FFF9EC',
     padding: 20,
+    justifyContent: 'center',
   },
 
+  emoji: {
+    fontSize: 42,
+    textAlign: 'center',
+  },
 
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#F59E0B',
+    marginTop: 12,
+    fontSize: 30,
+    fontWeight: '800',
+    textAlign: 'center',
+    color: '#222222',
   },
-
 
   subtitle: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#555',
+    marginTop: 8,
+    fontSize: 15,
+    textAlign: 'center',
+    color: '#777777',
   },
-
 
   input: {
-    width: '90%',
-    height: 120,
-    marginTop: 25,
-    padding: 15,
-    borderRadius: 15,
+    height: 150,
+    marginTop: 28,
+    padding: 18,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
-    textAlignVertical: 'top',
     fontSize: 16,
+    color: '#333333',
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
   },
 
-});
+  saveButton: {
+    height: 58,
+    marginTop: 18,
+    borderRadius: 18,
+    backgroundColor: '#F59E0B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+});
 
 export default AddDeedScreen;
