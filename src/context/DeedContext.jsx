@@ -3,10 +3,11 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import Config from 'react-native-config';
 
 export const DeedContext = createContext();
 
-const API_URL = 'http://localhost:5000';
+const API_URL = Config.API_URL;
 
 export function DeedProvider({
   children,
