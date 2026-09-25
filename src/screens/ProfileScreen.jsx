@@ -4,14 +4,18 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 
 import {DeedContext} from '../context/DeedContext';
 
-function ProfileScreen() {
-  const {deeds} = useContext(DeedContext);
+function ProfileScreen({user, onLogout}) {
+  const {deeds = []} = useContext(DeedContext);
 
   const totalDeeds = deeds.length;
+
+  const userName = user?.name || 'User';
+  const userEmail = user?.email || '';
 
   return (
     <ScrollView
@@ -20,20 +24,21 @@ function ProfileScreen() {
       showsVerticalScrollIndicator={false}>
 
       {/* Profile Header */}
+
       <View style={styles.profileHeader}>
 
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            R
+            {userName.charAt(0).toUpperCase()}
           </Text>
         </View>
 
         <Text style={styles.name}>
-          Robin
+          {userName}
         </Text>
 
-        <Text style={styles.username}>
-          @robin
+        <Text style={styles.email}>
+          {userEmail}
         </Text>
 
         <Text style={styles.bio}>
@@ -43,6 +48,7 @@ function ProfileScreen() {
       </View>
 
       {/* Stats */}
+
       <View style={styles.statsContainer}>
 
         <View style={styles.statBox}>
@@ -71,17 +77,18 @@ function ProfileScreen() {
 
         <View style={styles.statBox}>
           <Text style={styles.statNumber}>
-            1
+            {totalDeeds > 0 ? 1 : 0}
           </Text>
 
           <Text style={styles.statLabel}>
-            Day
+            Days
           </Text>
         </View>
 
       </View>
 
-      {/* Achievement */}
+      {/* Progress */}
+
       <Text style={styles.sectionTitle}>
         Your Progress
       </Text>
@@ -125,7 +132,54 @@ function ProfileScreen() {
 
       </View>
 
+      {/* Recent Deeds */}
+
+      <Text style={styles.sectionTitle}>
+        Your Recent Deeds
+      </Text>
+
+      <View style={styles.deedsCard}>
+
+        {totalDeeds === 0 ? (
+          <View style={styles.emptyState}>
+
+            <Text style={styles.emptyEmoji}>
+              🌱
+            </Text>
+
+            <Text style={styles.emptyTitle}>
+              No deeds yet
+            </Text>
+
+            <Text style={styles.emptyText}>
+              Start your good deed journey today.
+            </Text>
+
+          </View>
+        ) : (
+          deeds.slice(0, 3).map(item => (
+            <View
+              key={item._id}
+              style={styles.deedItem}>
+
+              <View style={styles.checkCircle}>
+                <Text style={styles.check}>
+                  ✓
+                </Text>
+              </View>
+
+              <Text style={styles.deedText}>
+                {item.text}
+              </Text>
+
+            </View>
+          ))
+        )}
+
+      </View>
+
       {/* About */}
+
       <Text style={styles.sectionTitle}>
         About GoodDeeds
       </Text>
@@ -144,6 +198,19 @@ function ProfileScreen() {
 
       </View>
 
+      {/* Logout */}
+
+      <TouchableOpacity
+        style={styles.logoutButton}
+        activeOpacity={0.8}
+        onPress={onLogout}>
+
+        <Text style={styles.logoutText}>
+          Log Out
+        </Text>
+
+      </TouchableOpacity>
+
     </ScrollView>
   );
 }
@@ -156,7 +223,7 @@ const styles = StyleSheet.create({
 
   content: {
     padding: 20,
-    paddingBottom: 35,
+    paddingBottom: 40,
   },
 
   profileHeader: {
@@ -186,9 +253,9 @@ const styles = StyleSheet.create({
     color: '#222222',
   },
 
-  username: {
-    marginTop: 3,
-    fontSize: 14,
+  email: {
+    marginTop: 4,
+    fontSize: 13,
     color: '#999999',
   },
 
@@ -290,6 +357,66 @@ const styles = StyleSheet.create({
     color: '#777777',
   },
 
+  deedsCard: {
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+  },
+
+  deedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F1F1',
+  },
+
+  checkCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FFF1CC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+
+  check: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#F59E0B',
+  },
+
+  deedText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#444444',
+  },
+
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 25,
+  },
+
+  emptyEmoji: {
+    fontSize: 38,
+  },
+
+  emptyTitle: {
+    marginTop: 8,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#333333',
+  },
+
+  emptyText: {
+    marginTop: 5,
+    fontSize: 13,
+    color: '#888888',
+    textAlign: 'center',
+  },
+
   aboutCard: {
     padding: 20,
     borderRadius: 20,
@@ -308,6 +435,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     color: '#666666',
+  },
+
+  logoutButton: {
+    height: 54,
+    marginTop: 25,
+    borderRadius: 17,
+    backgroundColor: '#222222',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  logoutText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });
 

@@ -1,109 +1,140 @@
-import React, {useContext} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 
-import {DeedContext} from '../context/DeedContext';
+const API_URL = 'http://localhost:5000';
 
 function CommunityScreen() {
-  const {deeds} = useContext(DeedContext);
+  const [deeds, setDeeds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // =========================
+  // FETCH ALL COMMUNITY DEEDS
+  // =========================
+
+  const fetchCommunityDeeds = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/deeds`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch community deeds');
+      }
+
+      const data = await response.json();
+
+      setDeeds(data);
+    } catch (error) {
+      console.error('Community fetch error:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // =========================
+  // INITIAL LOAD
+  // =========================
+
+  useEffect(() => {
+    fetchCommunityDeeds();
+  }, []);
+
+  // =========================
+  // PULL TO REFRESH
+  // =========================
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchCommunityDeeds();
+  };
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}>
-
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>
-          Community 🌱
-        </Text>
 
-        <Text style={styles.subtitle}>
-          Small actions. Big impact.
-        </Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Community 🌱</Text>
+
+        <Text style={styles.subtitle}>Small actions. Big impact.</Text>
       </View>
 
       {/* Community Stats */}
-      <View style={styles.statsCard}>
-        <Text style={styles.statsNumber}>
-          {deeds.length}
-        </Text>
 
-        <Text style={styles.statsLabel}>
-          Good Deeds Shared
-        </Text>
+      <View style={styles.statsCard}>
+        <Text style={styles.statsNumber}>{deeds.length}</Text>
+
+        <Text style={styles.statsLabel}>Good Deeds Shared</Text>
       </View>
 
-      {/* Feed Title */}
-      <Text style={styles.sectionTitle}>
-        Recent Good Deeds
-      </Text>
+      {/* Section */}
+
+      <Text style={styles.sectionTitle}>Recent Good Deeds</Text>
 
       {/* Feed */}
+
       <View style={styles.feedCard}>
+        {loading ? (
+          <View style={styles.loadingState}>
+            <ActivityIndicator size="large" color="#F59E0B" />
 
-        {deeds.length === 0 ? (
+            <Text style={styles.loadingText}>Loading community...</Text>
+          </View>
+        ) : deeds.length === 0 ? (
           <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🌱</Text>
 
-            <Text style={styles.emptyEmoji}>
-              🌱
-            </Text>
-
-            <Text style={styles.emptyTitle}>
-              The community is waiting
-            </Text>
+            <Text style={styles.emptyTitle}>The community is waiting</Text>
 
             <Text style={styles.emptyText}>
               Be the first to share a good deed!
             </Text>
-
           </View>
         ) : (
-          deeds
-            .slice()
-            .reverse()
-            .map(item => (
-              <View
-                key={item.id}
-                style={styles.deedItem}>
+          deeds.map(item => (
+            <View key={item._id} style={styles.deedItem}>
+              {/* Avatar */}
 
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    R
-                  </Text>
-                </View>
-
-                <View style={styles.deedContent}>
-
-                  <Text style={styles.userName}>
-                    Robin
-                  </Text>
-
-                  <Text style={styles.deedText}>
-                    {item.text}
-                  </Text>
-
-                  <Text style={styles.time}>
-                    Just now
-                  </Text>
-
-                </View>
-
-                <Text style={styles.heart}>
-                  ♡
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {item.userName ? item.userName.charAt(0).toUpperCase() : 'U'}
                 </Text>
-
               </View>
-            ))
+
+              {/* Content */}
+
+              <View style={styles.deedContent}>
+                <Text style={styles.userName}>{item.userName || 'User'}</Text>
+
+                <Text style={styles.deedText}>{item.text}</Text>
+
+                <Text style={styles.time}>
+                  {item.createdAt
+                    ? new Date(item.createdAt).toLocaleDateString()
+                    : ''}
+                </Text>
+              </View>
+
+              {/* Likes */}
+
+              <Text style={styles.heart}>♡</Text>
+            </View>
+          ))
         )}
-
       </View>
-
     </ScrollView>
   );
 }
@@ -116,7 +147,7 @@ const styles = StyleSheet.create({
 
   content: {
     padding: 20,
-    paddingBottom: 30,
+    paddingBottom: 35,
   },
 
   header: {
@@ -220,6 +251,17 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 25,
     color: '#AAAAAA',
+  },
+
+  loadingState: {
+    alignItems: 'center',
+    paddingVertical: 35,
+  },
+
+  loadingText: {
+    marginTop: 10,
+    fontSize: 13,
+    color: '#888888',
   },
 
   emptyState: {

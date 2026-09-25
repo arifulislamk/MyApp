@@ -1,20 +1,37 @@
-import React, {createContext, useEffect, useState} from 'react';
+import React, {
+  createContext,
+  useEffect,
+  useState,
+} from 'react';
 
 export const DeedContext = createContext();
 
 const API_URL = 'http://localhost:5000';
 
-export function DeedProvider({children}) {
+export function DeedProvider({
+  children,
+  user,
+  token,
+}) {
   const [deeds, setDeeds] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // =========================
-  // GET DEEDS FROM MONGODB
-  // =========================
+  /* =========================
+     FETCH USER DEEDS
+  ========================= */
 
   const fetchDeeds = async () => {
+    if (!user?._id) {
+      setDeeds([]);
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_URL}/api/deeds`);
+      setLoading(true);
+
+      const response = await fetch(
+        `${API_URL}/api/deeds/user/${user._id}`,
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch deeds');
@@ -30,33 +47,45 @@ export function DeedProvider({children}) {
     }
   };
 
-  // =========================
-  // ADD DEED
-  // =========================
+  /* =========================
+     ADD DEED
+  ========================= */
 
   const addDeed = async text => {
+    if (!user?._id) {
+      throw new Error('User is not logged in');
+    }
+
     try {
-      const response = await fetch(`${API_URL}/api/deeds`, {
-        method: 'POST',
+      const response = await fetch(
+        `${API_URL}/api/deeds`,
+        {
+          method: 'POST',
 
-        headers: {
-          'Content-Type': 'application/json',
+          headers: {
+            'Content-Type': 'application/json',
+
+            ...(token && {
+              Authorization: `Bearer ${token}`,
+            }),
+          },
+
+          body: JSON.stringify({
+            text: text,
+            userId: user._id,
+            userName: user.name,
+          }),
         },
-
-        body: JSON.stringify({
-          text: text,
-          userId: 'demo-user',
-          userName: 'Robin',
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create deed');
-      }
+      );
 
       const data = await response.json();
 
-      // Add newly created deed to current state
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Failed to create deed',
+        );
+      }
+
       setDeeds(prevDeeds => [
         data.deed,
         ...prevDeeds,
@@ -69,9 +98,9 @@ export function DeedProvider({children}) {
     }
   };
 
-  // =========================
-  // DELETE DEED
-  // =========================
+  /* =========================
+     DELETE DEED
+  ========================= */
 
   const deleteDeed = async id => {
     try {
@@ -79,15 +108,27 @@ export function DeedProvider({children}) {
         `${API_URL}/api/deeds/${id}`,
         {
           method: 'DELETE',
+
+          headers: {
+            ...(token && {
+              Authorization: `Bearer ${token}`,
+            }),
+          },
         },
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to delete deed');
+        throw new Error(
+          data.message || 'Failed to delete deed',
+        );
       }
 
       setDeeds(prevDeeds =>
-        prevDeeds.filter(deed => deed._id !== id),
+        prevDeeds.filter(
+          deed => deed._id !== id,
+        ),
       );
     } catch (error) {
       console.error('Delete deed error:', error);
@@ -95,13 +136,17 @@ export function DeedProvider({children}) {
     }
   };
 
-  // =========================
-  // LOAD DATA WHEN APP STARTS
-  // =========================
+  /* =========================
+     LOAD DEEDS
+  ========================= */
 
   useEffect(() => {
-    fetchDeeds();
-  }, []);
+    if (user?._id) {
+      fetchDeeds();
+    } else {
+      setDeeds([]);
+    }
+  }, [user?._id]);
 
   return (
     <DeedContext.Provider
@@ -111,6 +156,8 @@ export function DeedProvider({children}) {
         addDeed,
         deleteDeed,
         fetchDeeds,
+        user,
+        token,
       }}>
       {children}
     </DeedContext.Provider>

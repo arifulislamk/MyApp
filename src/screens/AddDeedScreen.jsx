@@ -5,30 +5,67 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 import {DeedContext} from '../context/DeedContext';
 
 function AddDeedScreen({onChangeScreen}) {
   const [deed, setDeed] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const {addDeed} = useContext(DeedContext);
 
-  const saveDeed = () => {
-    if (deed.trim() === '') {
+  const saveDeed = async () => {
+    const trimmedDeed = deed.trim();
+
+    if (trimmedDeed === '') {
+      Alert.alert(
+        'Empty Deed',
+        'Please write something before saving.',
+      );
       return;
     }
 
-    addDeed(deed.trim());
-    setDeed('');
+    try {
+      setSaving(true);
 
-    onChangeScreen('Home');
+      console.log('Saving deed:', trimmedDeed);
+
+      const result = await addDeed(trimmedDeed);
+
+      console.log('Deed saved successfully:', result);
+
+      setDeed('');
+
+      Alert.alert(
+        'Success 🎉',
+        'Your good deed has been saved!',
+        [
+          {
+            text: 'OK',
+            onPress: () => onChangeScreen('Home'),
+          },
+        ],
+      );
+    } catch (error) {
+      console.error('Save deed error:', error);
+
+      Alert.alert(
+        'Save Deed Error',
+        error?.message || String(error),
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <View style={styles.container}>
 
-      <Text style={styles.emoji}>✨</Text>
+      <Text style={styles.emoji}>
+        ✨
+      </Text>
 
       <Text style={styles.title}>
         Add a Good Deed
@@ -46,15 +83,20 @@ function AddDeedScreen({onChangeScreen}) {
         onChangeText={setDeed}
         multiline
         textAlignVertical="top"
+        editable={!saving}
       />
 
       <TouchableOpacity
-        style={styles.saveButton}
+        style={[
+          styles.saveButton,
+          saving && styles.disabledButton,
+        ]}
         activeOpacity={0.8}
-        onPress={saveDeed}>
+        onPress={saveDeed}
+        disabled={saving}>
 
         <Text style={styles.saveButtonText}>
-          Save Deed ✓
+          {saving ? 'Saving...' : 'Save Deed ✓'}
         </Text>
 
       </TouchableOpacity>
@@ -110,6 +152,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59E0B',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  disabledButton: {
+    opacity: 0.6,
   },
 
   saveButtonText: {

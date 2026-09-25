@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import {
   View,
   Text,
@@ -7,49 +7,48 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-import {DeedContext} from '../context/DeedContext';
+import { DeedContext } from '../context/DeedContext';
 
-function HomeScreen({onChangeScreen}) {
-  const {deeds} = useContext(DeedContext);
+function HomeScreen({ onChangeScreen, user }) {
+  const { deeds = [] } = useContext(DeedContext);
 
   const completed = deeds.length;
   const target = 100;
   const progress = Math.min(completed / target, 1);
 
+  const userName = user?.name || 'User';
+
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}>
-
+      showsVerticalScrollIndicator={false}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.smallText}>
-            Good morning 👋
-          </Text>
+          <Text style={styles.smallText}>Good morning 👋</Text>
 
-          <Text style={styles.name}>
-            Robin
-          </Text>
+          <Text style={styles.name}>{userName}</Text>
         </View>
 
-        <View style={styles.avatar}>
+        {/* Profile Avatar */}
+        <TouchableOpacity
+          style={styles.avatar}
+          activeOpacity={0.7}
+          onPress={() => onChangeScreen('Profile')}
+        >
           <Text style={styles.avatarText}>
-            R
+            {userName.charAt(0).toUpperCase()}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* Hero */}
       <View style={styles.heroCard}>
-        <Text style={styles.heroEmoji}>
-          ✨
-        </Text>
+        <Text style={styles.heroEmoji}>✨</Text>
 
-        <Text style={styles.heroTitle}>
-          Make today a little better.
-        </Text>
+        <Text style={styles.heroTitle}>Make today a little better.</Text>
 
         <Text style={styles.heroSubtitle}>
           Every good deed counts. Keep spreading kindness.
@@ -58,24 +57,17 @@ function HomeScreen({onChangeScreen}) {
 
       {/* Progress */}
       <View style={styles.progressCard}>
-
         <View style={styles.progressHeader}>
           <View>
-            <Text style={styles.cardLabel}>
-              TODAY'S PROGRESS
-            </Text>
+            <Text style={styles.cardLabel}>TODAY'S PROGRESS</Text>
 
             <Text style={styles.progressNumber}>
               {completed}
-              <Text style={styles.targetText}>
-                {' '} / {target}
-              </Text>
+              <Text style={styles.targetText}> / {target}</Text>
             </Text>
           </View>
 
-          <Text style={styles.progressEmoji}>
-            🌱
-          </Text>
+          <Text style={styles.progressEmoji}>🌱</Text>
         </View>
 
         <View style={styles.progressBackground}>
@@ -96,83 +88,52 @@ function HomeScreen({onChangeScreen}) {
             ? 'Amazing! You reached your daily goal! 🎉'
             : `${target - completed} more deeds to reach your goal.`}
         </Text>
-
       </View>
 
       {/* Add Deed Button */}
       <TouchableOpacity
         style={styles.addButton}
         activeOpacity={0.8}
-        onPress={() => onChangeScreen('Add')}>
+        onPress={() => onChangeScreen('Add')}
+      >
+        <Text style={styles.addIcon}>＋</Text>
 
-        <Text style={styles.addIcon}>
-          ＋
-        </Text>
-
-        <Text style={styles.addButtonText}>
-          Add a Good Deed
-        </Text>
-
+        <Text style={styles.addButtonText}>Add a Good Deed</Text>
       </TouchableOpacity>
 
       {/* Recent Deeds Header */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
-          Recent Deeds
-        </Text>
+        <Text style={styles.sectionTitle}>Recent Deeds</Text>
 
-        <TouchableOpacity
-          onPress={() => onChangeScreen('Community')}>
-          <Text style={styles.seeAll}>
-            See all
-          </Text>
+        <TouchableOpacity onPress={() => onChangeScreen('Community')}>
+          <Text style={styles.seeAll}>See all</Text>
         </TouchableOpacity>
       </View>
 
       {/* Deeds */}
       <View style={styles.deedsCard}>
-
         {deeds.length === 0 ? (
           <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🌱</Text>
 
-            <Text style={styles.emptyEmoji}>
-              🌱
-            </Text>
-
-            <Text style={styles.emptyTitle}>
-              No deeds yet
-            </Text>
+            <Text style={styles.emptyTitle}>No deeds yet</Text>
 
             <Text style={styles.emptyText}>
               Your good deeds will appear here.
             </Text>
-
           </View>
         ) : (
-          deeds
-            .slice(-3)
-            .reverse()
-            .map(item => (
-              <View
-                key={item.id}
-                style={styles.deedItem}>
-
-                <View style={styles.checkCircle}>
-                  <Text style={styles.check}>
-                    ✓
-                  </Text>
-                </View>
-
-                <Text style={styles.deedText}>
-                  {item.text}
-                </Text>
-
+          deeds.slice(0, 3).map(item => (
+            <View key={item._id} style={styles.deedItem}>
+              <View style={styles.checkCircle}>
+                <Text style={styles.check}>✓</Text>
               </View>
-            ))
+
+              <Text style={styles.deedText}>{item.text}</Text>
+            </View>
+          ))
         )}
-
       </View>
-
     </ScrollView>
   );
 }
